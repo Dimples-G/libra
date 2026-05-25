@@ -31,7 +31,7 @@ use crate::{
 const ROOT_AFTER_HELP: &str = "\
 Command Groups:
   Repository Setup        init, clone, config
-  Working Tree            status, add, rm, mv, restore, clean, stash, lfs, worktree
+  Working Tree            status, add, rm, mv, restore, clean, stash, lfs, worktree, stats
   History Inspection      log, shortlog, show, show-ref, ls-remote, diff, grep, blame, describe
   Commit And Branching    commit, branch, switch, checkout, tag, merge, rebase, reset, cherry-pick, revert
   Remote And Cloud        remote, fetch, pull, push, open, cloud, publish
@@ -420,6 +420,8 @@ enum Commands {
     Sandbox(command::sandbox::SandboxArgs),
     #[command(about = "Manage external-agent capture (Claude Code, Gemini, …)")]
     Agent(command::agent::AgentArgs),
+    #[command(about = "Count files in the working tree grouped by extension")]
+    Stats(command::stats::StatsArgs),
     #[command(about = "Inspect and upgrade the repository database schema")]
     Db(command::db::DbArgs),
     #[command(
@@ -862,7 +864,8 @@ fn command_preflight(command: &Commands) -> CliResult<CommandPreflight> {
         | Commands::Open(_)
         | Commands::CodeControl(_)
         | Commands::LsRemote(_)
-        | Commands::Sandbox(_) => Ok(CommandPreflight::none()),
+        | Commands::Sandbox(_)
+        | Commands::Stats(_) => Ok(CommandPreflight::none()),
         Commands::HashObject(args) if !args.write => {
             match utils::util::try_get_storage_path(None) {
                 Ok(storage) => Ok(CommandPreflight::repo_hash_kind_without_schema_guard(
@@ -1196,6 +1199,7 @@ pub async fn parse_async(args: Option<&[&str]>) -> CliResult<()> {
         Commands::Cloud(cmd_args) => command::cloud::execute_safe(cmd_args, &output).await?,
         Commands::Publish(cmd_args) => command::publish::execute_safe(cmd_args, &output).await?,
         Commands::Agent(cmd_args) => command::agent::execute_safe(cmd_args, &output).await?,
+        Commands::Stats(cmd_args) => command::stats::execute_safe(cmd_args, &output).await?,
         Commands::Hooks(cmd_args) => command::hooks::execute_safe(cmd_args, &output).await?,
         Commands::Bisect(bisect_cmd) => command::bisect::execute_safe(bisect_cmd, &output).await?,
     }
