@@ -8,3 +8,11 @@
 
 ## 测试已通过
 Claude Code 可以正常对该仓库进行 `git push` 操作。
+
+## Hello World 代码
+
+```rust
+fn main() {
+    println!("Hello, World!");
+}
+```
